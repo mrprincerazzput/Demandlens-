@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | DemandLens</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+
+    <main class="auth-card">
+        <div class="auth-logo">DemandLens</div>
+        <h1>Welcome Back!</h1>
+        <p class="auth-subtitle">
+            Sign in to explore your sales dashboard.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="auth-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('login') }}"
+              method="POST"
+              class="auth-form">
+
+            <label for="email">Email Address</label>
+            <input id="email"
+                   name="email"
+                   type="email"
+                   placeholder="Enter your email"
+                   autocomplete="email"
+                   required>
+
+            <label for="password">Password</label>
+            <input id="password"
+                   name="password"
+                   type="password"
+                   placeholder="Enter your password"
+                   autocomplete="current-password"
+                   required>
+
+            <button type="submit" class="auth-btn">
+                Login to Dashboard
+            </button>
+        </form>
+
+        <p class="auth-switch">
+            Don't have an account?
+            <a href="{{ url_for('register') }}">Create Account</a>
+        </p>
+    </main>
+
+</body>
+</html>

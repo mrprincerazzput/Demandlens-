@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | DemandLens</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-page">
+
+    <main class="auth-card">
+        <div class="auth-logo">DemandLens</div>
+        <h1>Create Account</h1>
+        <p class="auth-subtitle">
+            Join DemandLens to manage your product sales.
+        </p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="auth-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('register') }}"
+              method="POST"
+              class="auth-form">
+
+            <label for="name">Full Name</label>
+            <input id="name"
+                   name="name"
+                   type="text"
+                   placeholder="Enter your full name"
+                   autocomplete="name"
+                   required>
+
+            <label for="email">Email Address</label>
+            <input id="email"
+                   name="email"
+                   type="email"
+                   placeholder="Enter your email"
+                   autocomplete="email"
+                   required>
+
+            <label for="password">Create Password</label>
+            <input id="password"
+                   name="password"
+                   type="password"
+                   placeholder="At least 8 characters"
+                   minlength="8"
+                   autocomplete="new-password"
+                   required>
+
+            <button type="submit" class="auth-btn">
+                Create My Account
+            </button>
+        </form>
+
+        <p class="auth-switch">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login here</a>
+        </p>
+    </main>
+
+</body>
+</html>

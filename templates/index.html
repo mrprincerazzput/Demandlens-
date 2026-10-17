@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DemandLens | Sales Analytics</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="topbar">
+
+        <div class="brand">
+            <div class="brand-icon">D</div>
+            <div>
+                <h1>DemandLens</h1>
+                <p>Product Demand & Sales Analysis</p>
+            </div>
+        </div>
+
+        <div class="header-label">
+            <span class="live-dot"></span>
+            Dashboard Overview
+        </div>
+
+        <!-- Logout Button -->
+        <form action="{{ url_for('logout') }}"
+              method="POST"
+              class="logout-form">
+
+            <button type="submit" class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+
+    </header>
+
+    <main class="container">
+
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div>
+                <p class="eyebrow">SALES INTELLIGENCE</p>
+
+                <h2>Product Demand Dashboard</h2>
+
+                <p class="welcome-text">
+                    Track product performance, analyze sales,
+                    and discover demand trends in one place.
+                </p>
+            </div>
+
+            <div class="date-label">
+                DemandLens Analytics
+            </div>
+        </section>
+
+        <!-- Dashboard Statistics -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Products</span>
+                    <span class="stat-icon purple">▦</span>
+                </div>
+
+                <h3>{{ total_products }}</h3>
+                <p class="stat-description">Products in database</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Units Sold</span>
+                    <span class="stat-icon blue">↗</span>
+                </div>
+
+                <h3>{{ total_units }}</h3>
+                <p class="stat-description">Combined units sold</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Revenue</span>
+                    <span class="stat-icon green">₹</span>
+                </div>
+
+                <h3>₹{{ "{:,.2f}".format(total_revenue) }}</h3>
+                <p class="stat-description">Revenue from recorded sales</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">High-Demand Products</span>
+                    <span class="stat-icon orange">★</span>
+                </div>
+
+                <h3>{{ high_demand }}</h3>
+                <p class="stat-description">
+                    Products with 250+ units sold
+                </p>
+            </div>
+
+        </section>
+
+        <!-- Sales Chart -->
+        <section class="panel chart-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Product Sales Analysis</h2>
+                    <p>Compare sales performance across products.</p>
+                </div>
+
+                <span class="chart-label">Units Sold</span>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="salesChart"></canvas>
+            </div>
+
+        </section>
+
+        <!-- Product Table and Filters -->
+        <section class="panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Product Inventory</h2>
+                    <p>
+                        Search products and filter by category or demand.
+                    </p>
+                </div>
+
+                <span class="product-count">
+                    {{ products|length }} products
+                </span>
+            </div>
+
+            <!-- Dashboard Actions -->
+            <div class="export-section">
+
+                <a href="{{ url_for('products_page') }}"
+                   class="export-btn">
+                    Manage Products
+                </a>
+
+                <a href="{{ url_for('export_csv') }}"
+                   class="export-btn">
+                    Download Sales Report
+                </a>
+
+            </div>
+
+            <!-- Search and Category Filter -->
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="productSearch"
+                    placeholder="Search product name..."
+                    aria-label="Search product name"
+                >
+
+                <select
+                    id="categoryFilter"
+                    aria-label="Filter by category"
+                >
+                    <option value="">All Categories</option>
+
+                    {% for product in products %}
+                        <option value="{{ product['category'] }}">
+                            {{ product['category'] }}
+                        </option>
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <!-- Product Table -->
+            <div class="table-wrapper">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Units Sold</th>
+                            <th>Estimated Revenue</th>
+                            <th>Demand Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="productTable">
+
+                        {% for product in products %}
+                        <tr>
+
+                            <td class="product-name">
+                                {{ product['name'] }}
+                            </td>
+
+                            <td>
+                                <span class="category-tag">
+                                    {{ product['category'] }}
+                                </span>
+                            </td>
+
+                            <td>
+                                ₹{{ "{:,.2f}".format(product['price'] or 0) }}
+                            </td>
+
+                            <td class="units-cell">
+                                {{ product['units_sold'] or 0 }}
+                            </td>
+
+                            <td class="revenue-cell">
+                                ₹{{ "{:,.2f}".format(
+                                    (product['price'] or 0) *
+                                    (product['units_sold'] or 0)
+                                ) }}
+                            </td>
+
+                            <td>
+                                {% set units = product['units_sold'] or 0 %}
+
+                                {% if units >= 250 %}
+                                    <span class="status high">
+                                        High Demand
+                                    </span>
+                                {% elif units >= 100 %}
+                                    <span class="status medium">
+                                        Stable Demand
+                                    </span>
+                                {% else %}
+                                    <span class="status low">
+                                        Low Demand
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                No products found in the database.
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p id="noResults" class="empty-state" hidden>
+                No matching products found. Try changing your filters.
+            </p>
+
+        </section>
+
+        <!-- Demand Insights -->
+        <section class="panel insights-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Demand Insights</h2>
+                    <p>Understand demand using units sold.</p>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+
+                <div class="insight-item">
+                    <span class="insight-dot high-dot"></span>
+                    <div>
+                        <h3>High Demand</h3>
+                        <p>250 or more units sold</p>
+                    </div>
+                </div>
+
+                <div class="insight-item">
+                    <span class="insight-dot medium-dot"></span>
+                    <div>
+                        <h3>Stable Demand</h3>
+                        <p>100–249 units sold</p>
+                    </div>
+                </div>
+
+                <div class="insight-item">
+                    <span class="insight-dot low-dot"></span>
+                    <div>
+                        <h3>Low Demand</h3>
+                        <p>Fewer than 100 units sold</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>DemandLens — Product Demand & Sales Analysis</p>
+            <p>
+                Developed using Python, Flask, SQLite, HTML, CSS and JavaScript
+            </p>
+        </footer>
+
+    </main>
+
+    <!-- Data for the Sales Chart -->
+    <script id="sales-data" type="application/json">
+    {
+        "labels": {{ products | map(attribute='name') | list | tojson }},
+        "units": {{ products | map(attribute='units_sold') | list | tojson }}
+    }
+    </script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Project JavaScript -->
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+        defer>
+    </script>
+
+</body>
+</html>
